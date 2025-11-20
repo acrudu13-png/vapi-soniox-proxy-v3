@@ -9,14 +9,16 @@ load_dotenv()
 
 API_KEY = os.getenv("SONIOX_API_KEY")
 PORT = int(os.getenv("PORT", 3001))
-MODEL = "stt-rt-preview-v2"  # You can change this to another Soniox model if needed
+MODEL = "stt-rt-preview-v2"  # Or try "stt-rt-v3" for newer version if available in your account
 DEBOUNCE_TIME = 0.5  # Seconds to wait before sending a transcription phrase
+LANGUAGE = "ro"  # Romanian language code
 
 async def process_soniox(ws, channel, vapi_ws):
     buffer = ""
     timer = None
 
     async def debounce():
+        nonlocal buffer  # Declare at the top before any use
         await asyncio.sleep(DEBOUNCE_TIME)
         if buffer:
             await vapi_ws.send(json.dumps({
@@ -24,7 +26,6 @@ async def process_soniox(ws, channel, vapi_ws):
                 "transcription": buffer.strip(),
                 "channel": channel
             }))
-            nonlocal buffer
             buffer = ""
 
     async for message in ws:
@@ -78,7 +79,8 @@ async def handle_client(websocket):
             "model": MODEL,
             "audio_format": encoding,
             "sample_rate": sample_rate,
-            "num_channels": 1  # Mono for each channel
+            "num_channels": 1,  # Mono for each channel
+            "language_hints": [LANGUAGE]  # Added for Romanian
         }
 
         await customer_ws.send(json.dumps(soniox_start))
