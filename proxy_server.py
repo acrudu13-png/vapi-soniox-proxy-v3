@@ -6,6 +6,8 @@ import numpy as np
 from dotenv import load_dotenv
 from http import HTTPStatus
 
+print("Script starting...")  # Debug: Confirm script executes
+
 load_dotenv()
 
 API_KEY = os.getenv("SONIOX_API_KEY")
@@ -106,15 +108,16 @@ async def handle_client(websocket):
         customer_task.cancel()
         assistant_task.cancel()
 
-# Updated: Handle all non-WebSocket requests (e.g., Render health checks) with 200 OK
+# Handle Render health checks on /healthz
 async def process_request(path, request_headers):
-    if "Upgrade" not in request_headers or request_headers["Upgrade"].lower() != "websocket":
-        return HTTPStatus.OK, [("Content-Type", "text/plain")], b"Server is healthy"
+    if path == "/healthz":
+        print("Health check received")  # Debug: Log when health check hits
+        return HTTPStatus.OK, [("Content-Type", "text/plain")], b"OK\n"
     return None
 
 async def main():
     async with websockets.serve(handle_client, "0.0.0.0", PORT, process_request=process_request):
-        print(f"Listening on port {PORT}")
+        print(f"Server ready and listening on port {PORT}")
         await asyncio.Future()  # Run forever
 
 if __name__ == "__main__":
