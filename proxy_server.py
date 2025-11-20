@@ -9,7 +9,7 @@ load_dotenv()
 
 API_KEY = os.getenv("SONIOX_API_KEY")
 PORT = int(os.getenv("PORT", 3001))
-MODEL = "stt-rt-preview-v2"  # Or try "stt-rt-v3" for newer version if available in your account
+MODEL = "stt-rt-v3"  # Updated to the active v3 model for better multilingual support
 DEBOUNCE_TIME = 0.5  # Seconds to wait before sending a transcription phrase
 LANGUAGE = "ro"  # Romanian language code
 
@@ -80,7 +80,7 @@ async def handle_client(websocket):
             "audio_format": encoding,
             "sample_rate": sample_rate,
             "num_channels": 1,  # Mono for each channel
-            "language_hints": [LANGUAGE]  # Added for Romanian
+            "language_hints": [LANGUAGE]  # For Romanian
         }
 
         await customer_ws.send(json.dumps(soniox_start))
