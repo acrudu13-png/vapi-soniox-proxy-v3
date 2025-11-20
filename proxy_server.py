@@ -106,11 +106,10 @@ async def handle_client(websocket):
         customer_task.cancel()
         assistant_task.cancel()
 
-# New: Handle Render health checks (HTTP GET/HEAD to /)
+# Updated: Handle all non-WebSocket requests (e.g., Render health checks) with 200 OK
 async def process_request(path, request_headers):
-    if path == "/":
-        # Respond to non-WebSocket requests (health checks) with 200 OK
-        return HTTPStatus.OK, [], b"OK"
+    if "Upgrade" not in request_headers or request_headers["Upgrade"].lower() != "websocket":
+        return HTTPStatus.OK, [("Content-Type", "text/plain")], b"Server is healthy"
     return None
 
 async def main():
