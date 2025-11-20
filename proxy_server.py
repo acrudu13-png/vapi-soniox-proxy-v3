@@ -4,6 +4,7 @@ import asyncio
 import websockets
 import numpy as np
 from dotenv import load_dotenv
+from http import HTTPStatus
 
 load_dotenv()
 
@@ -105,8 +106,15 @@ async def handle_client(websocket):
         customer_task.cancel()
         assistant_task.cancel()
 
+# New: Handle Render health checks (HTTP GET/HEAD to /)
+async def process_request(path, request_headers):
+    if path == "/":
+        # Respond to non-WebSocket requests (health checks) with 200 OK
+        return HTTPStatus.OK, [], b"OK"
+    return None
+
 async def main():
-    async with websockets.serve(handle_client, "0.0.0.0", PORT):
+    async with websockets.serve(handle_client, "0.0.0.0", PORT, process_request=process_request):
         print(f"Listening on port {PORT}")
         await asyncio.Future()  # Run forever
 
